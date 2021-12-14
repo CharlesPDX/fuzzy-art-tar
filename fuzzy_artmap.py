@@ -17,8 +17,9 @@ class FuzzyArtMap:
         self.weight_ab = np.ones((number_of_categories, f2_size))  # Row-k, col-j entry = weight from ARTa F2  node j to Map Field node k
         # self.committed_nodes = [] # probably originally intended as an optimization for Fa mismatch to find first uncommited node
         
-    def _resonance_search(self, input_vector, already_reset_nodes, rho_a, allow_category_growth = True):
+    def _resonance_search(self, input_vector, already_reset_nodes, rho_a, allow_category_growth = True, predict = False):
         resonant_a = False
+        subset_by_node = {}
         while not resonant_a:
             N = self.weight_a.shape[1]  # Count how many F2a nodes we have
 
@@ -56,7 +57,11 @@ class FuzzyArtMap:
             # S = sum(A_AND_w) from above
 
             # Testing if the winning node resonates in ARTa
-            if sum(x)/sum(input_vector) >= rho_a:
+            membership_degree = sum(x)/sum(input_vector)
+            if predict:
+                subset_by_node[J] = membership_degree[0]
+            
+            if membership_degree >= rho_a:
                 resonant_a = True
                 # returning from this method will return winning ARTMAPa node index (J) and weighted input vector
             else:
@@ -73,13 +78,13 @@ class FuzzyArtMap:
                     self.weight_ab = np.concatenate((self.weight_ab, np.ones((self.weight_ab.shape[0], 1))), axis=1)
                     # Give the new F2a node a w_ab entry, this new node should win
                 else:
-                    return -1, None            
+                    return -1, None, subset_by_node
             # End of the while loop searching for ARTa resonance
             # If not resonant_a, we pick the next highest Tj and see if *that* node resonates, i.e. goto "while"
             # If resonant_a, we have found an ARTa resonance, namely node J
             # Return from method to see if we get Fab match with node J
 
-        return J, x
+        return J, x, subset_by_node
 
     def train(self, input_vector: np.array, class_vector: np.array):
         rho_a = self.rho_a_bar # We start off with ARTa vigilance at baseline
@@ -88,7 +93,7 @@ class FuzzyArtMap:
         # We haven't rest any ARTa nodes for this input pattern yet, maintain list between resonance searches of Fa
 
         while not resonant_ab:
-            J, x = self._resonance_search(input_vector, already_reset_nodes, rho_a)
+            J, x, _ = self._resonance_search(input_vector, already_reset_nodes, rho_a)
 
             # Desired output for input number i
             z = np.minimum(class_vector, self.weight_ab[:, J, np.newaxis])   # Fab activation vector, z
@@ -119,14 +124,10 @@ class FuzzyArtMap:
 
     def predict(self, input_vector: np.array):
         rho_a = 0 # set ARTa vigilance to first match
-        J, _ = self._resonance_search(input_vector, [], rho_a, False)
-
-        if J == -1:
-            return np.zeros_like(self.weight_ab)
+        J, _, membership_by_node = self._resonance_search(input_vector, [], rho_a, False, predict = True)
         
-        z = self.weight_ab[:, J, np.newaxis]   # Fab activation vector, z
         # prediction transliterated from fuzzyartmap_demo.m, does not appear to be any different from z
         # prediction_transliteration = self.weight_ab[:,J]/sum(self.weight_ab[:,J]) 
         # print(prediction_transliteration)
         # (Called x_ab in Fuzzy ARTMAP paper)
-        return z
+        return self.weight_ab[:, J, np.newaxis], membership_by_node[J] # Fab activation vector & fuzzy membership value

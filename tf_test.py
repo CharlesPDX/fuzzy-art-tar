@@ -14,7 +14,8 @@ corpus = [
     'Is this the first document?',
     "And this is about the first document.",
     "What about the third document?",
-    "The first document is the important one."
+    "The first document is the important one.",
+    "Totally irrelevant document"
 ]
 relevance = [
     1,
@@ -23,7 +24,8 @@ relevance = [
     1,
     1,
     0,
-    1
+    1,
+    0
 ]
 
 valid_vector = np.array([[0], [1]])
@@ -54,7 +56,7 @@ if __name__ == "__main__":
 
     fuzzy_artmap = FuzzyArtMap(vectorized_corpus.shape[1]*2, 1, rho_a_bar=0.95)
 
-    last_element = len(relevance) - 1
+    last_element = len(relevance) - 2
     for doc_index, vector in enumerate(vectorized_corpus):
         if doc_index == last_element:
             break
@@ -62,5 +64,9 @@ if __name__ == "__main__":
         fuzzy_artmap.train(comp, class_vector)
     
     comp, class_vector = get_test_input_and_output(last_element, vectorized_corpus[last_element])
-    prediction = fuzzy_artmap.predict(comp)
-    print(f"predicted: {prediction}\nactual:{class_vector}")
+    prediction, membership_degree = fuzzy_artmap.predict(comp)
+    print(f"predicted: {prediction}\nactual:{class_vector}\nmembership:{membership_degree}")
+
+    comp, class_vector = get_test_input_and_output(last_element+1, vectorized_corpus[last_element+1])
+    prediction, membership_degree = fuzzy_artmap.predict(comp)
+    print(f"predicted: {prediction}\nactual:{class_vector}\nmembership:{membership_degree}")

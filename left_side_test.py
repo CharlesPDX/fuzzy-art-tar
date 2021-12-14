@@ -33,5 +33,5 @@ if __name__ == "__main__":
         fuzzy_artmap.train(comp, class_vector)
 
     comp, class_vector = get_test_input_and_output()
-    prediction = fuzzy_artmap.predict(comp)
-    print(f"predicted: {prediction}\nactual:{class_vector}")
+    prediction, membership_degree = fuzzy_artmap.predict(comp)
+    print(f"predicted: {prediction}\nactual:{class_vector}\nmembership:{membership_degree}")

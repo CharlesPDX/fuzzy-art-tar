@@ -41,13 +41,13 @@ if __name__ == "__main__":
 
     out_test_point = np.array([[0.115], [0.948]])
     encoded_test_point = complement_encode.complement_encode(out_test_point)
-    prediction = fuzzy_artmap.predict(encoded_test_point)
-    print(prediction)
+    prediction, membership_degree = fuzzy_artmap.predict(encoded_test_point)
+    print(prediction, membership_degree)
 
     in_test_point = np.array([[0.262], [0.782]])
     encoded_test_point = complement_encode.complement_encode(in_test_point)
-    prediction = fuzzy_artmap.predict(encoded_test_point)
-    print(prediction)
+    prediction, membership_degree = fuzzy_artmap.predict(encoded_test_point)
+    print(prediction, membership_degree)
 
     # run predictions on training and test data, calculating error rate
     # training_predictions = Counter()
