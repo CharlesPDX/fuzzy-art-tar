@@ -61,7 +61,7 @@ class FuzzyArtMap:
             if predict:
                 subset_by_node[J] = membership_degree[0]
             
-            if membership_degree >= rho_a:
+            if membership_degree[0] >= rho_a:
                 resonant_a = True
                 # returning from this method will return winning ARTMAPa node index (J) and weighted input vector
             else:
@@ -108,7 +108,9 @@ class FuzzyArtMap:
                 # Increase rho_a vigilance.
                 # This will cause F2a node J to get reset when we go back through the ARTa search loop again.
                 # Also, *for this input*, the above-baseline vigilance will cause a finer ARTa category to win
-                rho_a = sum(x)/sum(input_vector) + self.epsilon
+                rho_a = sum(x)/sum(input_vector)
+                rho_a = min(rho_a[0] + self.epsilon, 1.0)
+                assert rho_a <= 1.0, f"actual rho {rho_a}"
 
         #### End of the while 'not resonant_ab' loop.
         #### Now we have a resonating ARTa output which gives a match at the Fab layer.

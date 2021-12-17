@@ -3,8 +3,8 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 
-from fuzzy_artmap import FuzzyArtMap
-import complement_encode
+from fuzzy_artmap_module import FuzzyArtMap
+from fuzzy_artmap_module import complement_encode
 
 
 corpus = [
@@ -38,7 +38,7 @@ def get_test_input_and_output(doc_index, vector):
     else:
         output_value = invalid_vector
     
-    complement_encoded_input = complement_encode.complement_encode(vector.toarray().transpose())
+    complement_encoded_input = complement_encode(vector.toarray().transpose())
     return complement_encoded_input, output_value
 
 
