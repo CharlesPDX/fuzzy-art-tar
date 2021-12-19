@@ -7,8 +7,8 @@ import numpy as np
 from fuzzy_artmap import FuzzyArtMap
 import complement_encode
 
-valid_vector = np.array([[0], [1]])
-invalid_vector = np.array([[1], [0]])
+valid_vector = np.array([[1, 0]])
+invalid_vector = np.array([[0, 1]])
 
 
 def get_test_input_and_output():
@@ -18,7 +18,7 @@ def get_test_input_and_output():
         output_value = valid_vector
     else:
         output_value = invalid_vector
-    test_input = np.array([[first], [second]])
+    test_input = np.array([[first, second]])
     complement_encoded_input = complement_encode.complement_encode(test_input)
 
     return complement_encoded_input, output_value
