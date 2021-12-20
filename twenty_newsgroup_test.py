@@ -50,8 +50,8 @@ def test_predictions(fuzzy_artmap, document_indexes, corpus, categories, relevan
 def setup_corpus():
     corpus, categories, _ = get_tf_idf_twenty_newsgroup_corpus()
     # documents = {index: category for index, category in categories.items() if category in test_topics and index not in seed_indexes }
-    documents = {index: category for index, category in categories.items() if index not in seed_indexes }
-    shuffled_document_indexes = seed_indexes + random.sample(list(documents.keys()), len(documents))
+    categories = {index: category for index, category in categories.items() if index not in seed_indexes }
+    shuffled_document_indexes = seed_indexes + random.sample(list(categories.keys()), len(categories))
     return corpus, categories, shuffled_document_indexes
 
 
