@@ -1,7 +1,7 @@
 import os
-from reuters_small_parser import ReutersParser
+from .reuters_small_parser import ReutersParser
 from sklearn.feature_extraction.text import TfidfVectorizer
-corpora_root_path = os.path.abspath("../../corpora")
+corpora_root_path = os.path.abspath("../corpora")
 reuters_small_corpus = "reuters21578"
 full_reuters_small_path = os.path.join(corpora_root_path, reuters_small_corpus)
 

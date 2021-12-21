@@ -1,1 +1,2 @@
 from .tf_idf_twenty_newsgroups import get_tf_idf_twenty_newsgroup_corpus
+from .tf_idf_reuters_small import get_tf_idf_reuters_small_corpus
