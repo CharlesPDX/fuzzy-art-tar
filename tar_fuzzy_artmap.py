@@ -6,7 +6,7 @@ import datetime
 import numpy as np
 from unsync import unsync
 
-from preprocessing import get_tf_idf_reuters_small_corpus
+from preprocessing import get_tf_idf_twenty_newsgroup_corpus, get_tf_idf_reuters_small_corpus
 
 from fuzzy_artmap_module import FuzzyArtMap
 from fuzzy_artmap_module import complement_encode
@@ -48,22 +48,6 @@ def test_predictions(fuzzy_artmap, document_indexes, corpus, categories, relevan
     return accuracy_counter
 
 
-def setup_corpus():
-    corpus, document_corpus_index_map, categories = get_tf_idf_reuters_small_corpus()
-    corpus_seed_indexes = set()
-    for corpus_index, document_index in document_corpus_index_map.items():
-        if document_index in seed_indexes:
-            corpus_seed_indexes.add(corpus_index)
-    # documents = {index: category for index, category in categories.items() if category in test_topics and index not in seed_indexes }
-    # categories = {index: category for index, category in categories.items() if index not in seed_indexes }
-    random_indexes = set(document_corpus_index_map.keys())
-    random_indexes.difference_update(corpus_seed_indexes)
-    random_indexes = random.sample(random_indexes, len(random_indexes))
-    
-    shuffled_document_indexes = list(corpus_seed_indexes) + random_indexes
-    return corpus, categories, shuffled_document_indexes, document_corpus_index_map
-
-
 def train_model(corpus, shuffled_document_indexes, categories, relevant_category, document_corpus_index_map):
     fuzzy_artmap = FuzzyArtMap(corpus.shape[1]*2, 36, rho_a_bar=0.95)
     training_split = Counter()
@@ -88,7 +72,7 @@ def calculate_metrics(accuracy_data: Counter, duration: datetime.timedelta, numb
     print(f"accuracy: {accuracy}\nprecision: {precision}\nrecall: {recall}\nrecall (set): {recall_set}\ntotal relevant docs: {number_of_relevant_documents}\ntotal docs:{total_documents_tested}\nprediction rate:{rate}")
 
 
-def run_test():
+def run_test(setup_corpus):
     print(f"start: {datetime.datetime.now()}")
     corpus, categories, shuffled_document_indexes, document_corpus_index_map = setup_corpus()
     
@@ -107,7 +91,7 @@ def run_test():
     calculate_metrics(accuracy_data, prediction_duration, number_of_relevant_documents)
 
 # @profile
-def run_active_learning_test():
+def run_active_learning_test(setup_corpus):
     print(f"start: {datetime.datetime.now()}")
     corpus, categories, shuffled_document_indexes, document_corpus_index_map = setup_corpus()
     available_document_indexes = set(shuffled_document_indexes[100:])
@@ -122,7 +106,7 @@ def run_active_learning_test():
     start_predictions = datetime.datetime.now()
     print(f"start active learning: {start_predictions}")
     batch_size = 100
-    while found_relevant_documents != number_of_relevant_documents and has_candidates: 
+    while found_relevant_documents != number_of_relevant_documents and has_candidates:        
         relevent_documents_in_batch = 0
         candidates = query(fuzzy_artmap, corpus, categories, available_document_indexes, document_corpus_index_map)
         for candidate in candidates[:batch_size]:
@@ -172,11 +156,40 @@ def get_predictions(fuzzy_artmap, corpus, categories, document_index_chunk, docu
     return predictions
 
 
+def setup_twenty_newsgroup_corpus():
+    global relevant_category
+    relevant_category = "alt.atheism" 
+    seed_indexes = [4000, 4001]
+    processed_corpus = get_tf_idf_twenty_newsgroup_corpus()
+    categories = {index: category for index, category in processed_corpus.categories.items() if index not in seed_indexes }
+    categories[4000] = "alt.atheism"
+    categories[4001] = "alt.atheism"
+    shuffled_document_indexes = seed_indexes + random.sample(list(categories.keys()), len(categories))
+    return processed_corpus.vectorized_corpus, processed_corpus.categories, shuffled_document_indexes, processed_corpus.document_corpus_map
+
+def setup_reuters_small_corpus():
+    global relevant_category
+    relevant_category = "grain"
+    seed_indexes = [13067,13070,13458,6267]
+    processed_corpus = get_tf_idf_reuters_small_corpus()
+    corpus_seed_indexes = set()
+    for corpus_index, document_index in processed_corpus.document_corpus_map.items():
+        if document_index in seed_indexes:
+            corpus_seed_indexes.add(corpus_index)
+    # documents = {index: category for index, category in categories.items() if category in test_topics and index not in seed_indexes }
+    # categories = {index: category for index, category in categories.items() if index not in seed_indexes }
+    random_indexes = set(processed_corpus.document_corpus_map.keys())
+    random_indexes.difference_update(corpus_seed_indexes)
+    random_indexes = random.sample(random_indexes, len(random_indexes))
+    
+    shuffled_document_indexes = list(corpus_seed_indexes) + random_indexes
+    return processed_corpus.vectorized_corpus, processed_corpus.categories, shuffled_document_indexes, processed_corpus.document_corpus_map
+
 if __name__ == "__main__":
     processed_document_indexes = set()
-    relevant_category = "grain"
-    # seed_indexes = [13067,13070,13458,6267,124,136,4524,4637,1299,1406,1623,1631,1731,1845,15303,15580,15914,8374,8613,8656,8686,8895,8943,14212,14313,14340,14389,14828,21123,19964,3390,5363,5408,5611,5800,5826,5972,11065,11768,11862,12338,12830,9907,16359,7154]
-    seed_indexes = [13067,13070,13458,6267]    
-    # run_test()
-    run_active_learning_test()
+    relevant_category = None
+    # run_test(setup_twenty_newsgroup_corpus)
+    # run_test(setup_reuters_small_corpus)
+    # run_active_learning_test(setup_reuters_small_corpus)
+    run_active_learning_test(setup_twenty_newsgroup_corpus)
     
